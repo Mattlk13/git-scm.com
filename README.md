@@ -24,21 +24,27 @@ source clone like this:
 
     $ GIT_REPO=../git/.git rake local_index
 
-Or you can do it from GitHub (much slower) like this:
+This will populate the man pages for all Git versions. You can also populate them only for a specific Git version (faster):
 
-    $ export API_USER=github_username
-    $ export API_PASS=github_password
-    $ rake preindex
+    $ version=v2.23.0
+    $ GIT_REPO=../git/.git REBUILD_DOC=$version rake local_index
+
+Or you can populate the man pages from GitHub (much slower) like this:
+
+    $ export GITHUB_API_TOKEN=github_personal_auth_token
+    $ rake preindex  # all versions
+    $ REBUILD_DOC=$version rake preindex  # specific version
 
 Similarly, you can also populate the localized man pages. From a local clone of https://github.com/jnavila/git-html-l10n :
 
-    $ GIT_REPO=../git-html-l10n/.git rake local_index_l10n
+    $ GIT_REPO=../git-html-l10n/.git rake local_index_l10n  # all versions
+    $ GIT_REPO=../git-html-l10n/.git REBUILD_DOC=$version rake local_index_l10n  # specific version
 
 Or you can do it from GitHub (much slower) like this:
 
-    $ export API_USER=github_username
-    $ export API_PASS=github_password
-    $ rake preindex_l10n
+    $ export GITHUB_API_TOKEN=github_personal_auth_token
+    $ rake preindex_l10n  # all versions
+    $ REBUILD_DOC=$version rake preindex_l10n  # specific version
 
 Now you need to get the latest downloads for the downloads pages:
 
@@ -47,8 +53,7 @@ Now you need to get the latest downloads for the downloads pages:
 Now you'll probably want some book data. You'll have
 to have access to the [Pro Git project on GitHub](https://github.com/progit/progit2) through the API.
 
-    $ export API_USER=github_username
-    $ export API_PASS=github_password
+    $ export GITHUB_API_TOKEN=github_personal_auth_token
     $ rake remote_genbook2
 
 If you have 2FA enabled, you'll need to create a [Personal Access Token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/).    

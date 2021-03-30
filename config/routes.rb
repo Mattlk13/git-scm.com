@@ -46,6 +46,10 @@ Rails.application.routes.draw do
 
     nested do
       scope ":lang" do
+        get "/v1"                => redirect("/book/%{lang}/v2")
+        get "/v1/:slug"          => redirect("/book/%{lang}/v2/%{slug}")
+        get "/v1/:chapter/:link" => redirect("/book/%{lang}/v2/%{chapter}/%{link}")
+
         get "/v:edition"                => "books#show"
         get "/v:edition/:slug"          => "books#section"
         get "/v:edition/:chapter/:link" => "books#link", :chapter => /(ch|app)\d+/
@@ -96,7 +100,6 @@ Rails.application.routes.draw do
     get "/external-links"       => redirect("doc/ext")
   end
 
-  get "/course/svn" => "site#svn"
   get "/sfc"        => "site#sfc"
   get "/site"       => "site#about"
   get "/trademark"  => redirect("/about/trademark")

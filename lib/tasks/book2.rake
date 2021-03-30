@@ -30,8 +30,6 @@ task reset_book2: :environment do
 end
 
 def genbook(code, &get_content)
-  template_dir = File.join(Rails.root, "templates")
-
   nav = '<div id="nav"><a href="[[nav-prev]]">prev</a> | <a href="[[nav-next]]">next</a></div>'
 
   progit = get_content.call("progit.asc")
@@ -71,16 +69,23 @@ def genbook(code, &get_content)
     end
   end
 
+  begin
+    l10n_file = URI.open("https://raw.githubusercontent.com/asciidoctor/asciidoctor/master/data/locale/attributes-#{code}.adoc").read
+  rescue
+    l10n_file = ""
+  end
+  initial_content.gsub!("include::ch01", l10n_file + "\ninclude::ch01")
+
   content = expand(initial_content, "progit.asc") { |filename| get_content.call(filename) }
   # revert internal links decorations for ebooks
   content.gsub!(/<<.*?\#(.*?)>>/, "<<\\1>>")
 
-  asciidoc = Asciidoctor::Document.new(content, template_dir: template_dir, attributes: { "compat-mode" => true})
+  asciidoc = Asciidoctor::Document.new(content, attributes: { "lang" => code})
   html = asciidoc.render
   alldoc = Nokogiri::HTML(html)
   number = 1
 
-  Book.destroy_all(edition: 2, code: code)
+  Book.where(edition: 2, code: code).destroy_all
   book = Book.create(edition: 2, code: code)
 
   alldoc.xpath("//div[@class='sect1']").each_with_index do |entry, index|
@@ -184,42 +189,13 @@ end
 
 desc "Generate book html directly from git repo"
 task remote_genbook2: :environment do
-  @octokit = Octokit::Client.new(login: ENV["API_USER"], password: ENV["API_PASS"])
-  all_books = {
-    "be" => "progit/progit2-be",
-    "bg" => "progit/progit2-bg",
-    "cs" => "progit-cs/progit2-cs",
-    "de" => "progit-de/progit2",
-    "en" => "progit/progit2",
-    "es" => "progit/progit2-es",
-    "fr" => "progit/progit2-fr",
-    "gr" => "progit2-gr/progit2",
-    "id" => "progit/progit2-id",
-    "it" => "progit/progit2-it",
-    "ja" => "progit/progit2-ja",
-    "ko" => "progit/progit2-ko",
-    "mk" => "progit2-mk/progit2",
-    "nl" => "progit/progit2-nl",
-    "pl" => "progit2-pl/progit2-pl",
-    "pt-br" => "progit2-pt-br/progit2",
-    "pt-pt" => "progit2-pt-pt/progit2",
-    "ru" => "progit/progit2-ru",
-    "sl" => "progit/progit2-sl",
-    "sr" => "progit/progit2-sr",
-    "tl" => "progit2-tl/progit2",
-    "tr" => "progit/progit2-tr",
-    "uk" => "progit/progit2-uk",
-    "uz" => "progit/progit2-uz",
-    "zh" => "progit/progit2-zh",
-    "zh-tw" => "progit/progit2-zh-tw",
-    "fa" => "progit2-fa/progit2"
-  }
+  @octokit = Octokit::Client.new(access_token: ENV["GITHUB_API_TOKEN"])
 
   if ENV["GENLANG"]
-    books = all_books.select { |code, repo| code == ENV["GENLANG"] }
+    books = Book.all_books.select { |code, repo| code == ENV["GENLANG"] }
   else
-    books = all_books.select do |code, repo|
-      repo_head = @octokit.ref(repo, "heads/master").object[:sha]
+    books = Book.all_books.select do |code, repo|
+      repo_head = @octokit.commit(repo, "HEAD").sha
       book = Book.where(edition: 2, code: code).first_or_create
       repo_head != book.ebook_html
     end
@@ -231,7 +207,8 @@ task remote_genbook2: :environment do
         content = Base64.decode64(@octokit.blob(repo, sha, encoding: "base64").content)
         blobs[sha] = content.force_encoding("UTF-8")
       end
-      repo_tree = @octokit.tree(repo, "HEAD", recursive: true)
+      repo_head = @octokit.commit(repo, "HEAD")
+      repo_tree = @octokit.tree(repo, repo_head.commit.tree.sha, recursive: true)
       Book.transaction do
         genbook(code) do |filename|
           file_handle = repo_tree.tree.detect { |tree| tree[:path] == filename }
@@ -239,15 +216,14 @@ task remote_genbook2: :environment do
             blob_content[file_handle[:sha]]
           end
         end
-        repo_head = @octokit.ref(repo, "heads/master").object[:sha]
 
         book = Book.where(edition: 2, code: code).first_or_create
-        book.ebook_html = repo_head
+        book.ebook_html = repo_head.sha
 
         begin
           rel = @octokit.latest_release(repo)
           get_url =   -> (content_type) do
-            asset = rel.assets.select { |asset| asset.content_type==content_type }.first
+            asset = rel.assets.find { |asset| asset.content_type==content_type }
             if asset
               asset.browser_download_url
             else

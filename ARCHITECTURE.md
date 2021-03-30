@@ -8,7 +8,7 @@ maintainer is hit by a bus.
 
 ## Content
 
-Though the site is a rails app, it can _mostly_ be thought of a serving
+Though the site is a rails app, it can _mostly_ be thought of as serving
 static content. It's just that we suck in that static content and
 pre-process it using nightly scheduled jobs. We never write anything to
 the database on behalf of user requests.
@@ -105,13 +105,14 @@ The Cloudflare setup is mostly pretty simple:
    but the long-term goal is to push that logic onto the client side as
    much as possible.
 
-There's a single Cloudflare account/password that controls the site.
-There's no team setup, but the information is in escrow with the Git PLC
-at Software Freedom Conservancy. Cloudflare provides the project with
-enough credits that it doesn't cost anything (though we're not using
-very many features, so it's possible that a free account would be
-sufficient, too).
-
+Both domains (c.f., the section on [DNS](#DNS) below) are owned by a
+Cloudflare "Team", and membership of that team is required to
+administrate the domains. Similar to the Heroku setup, you can ask to
+join this team if you wish to help out. The information about the team
+setup is in escrow with the Git PLC at Software Freedom Conservancy.
+Cloudflare provides the project with enough credits that it doesn't cost
+anything (though we're not using very many features, so it's possible
+that a free account would be sufficient, too).
 
 ## Bonsai Elasticsearch
 

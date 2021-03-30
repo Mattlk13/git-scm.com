@@ -2,10 +2,10 @@
 
 class DocController < ApplicationController
 
-  before_filter :set_caching
-  before_filter :set_doc_file, only: [:man]
-  before_filter :set_doc_version, only: [:man]
-  before_filter :set_book, only: [:index]
+  before_action :set_caching
+  before_action :set_doc_file, only: [:man]
+  before_action :set_doc_version, only: [:man]
+  before_action :set_book, only: [:index]
 
   def index
     @videos = Gitscm::VIDEOS
@@ -22,6 +22,7 @@ class DocController < ApplicationController
     @version  = @doc_version.version
     @language = @doc_version.language
     @doc      = @doc_version.doc
+    @name     = @doc_file.name
     @page_title = "Git - #{@doc_file.name} Documentation"
     return redirect_to docs_path unless @doc_version
     @last     = @doc_file.doc_versions.latest_version
@@ -33,7 +34,7 @@ class DocController < ApplicationController
 
   def watch
     slug = params[:id]
-    @video = Gitscm::VIDEOS.select { |a| a[4] == slug }.first
+    @video = Gitscm::VIDEOS.find { |a| a[4] == slug }
     if !@video
       redirect_to :videos
     end

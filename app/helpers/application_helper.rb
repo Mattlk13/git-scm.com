@@ -5,17 +5,15 @@ require "iso8601"
 module ApplicationHelper
 
   def sidebar_link_options(section)
-    if %w( about documentation reference book videos
-           external-links downloads guis logos community
-          ).include?(@section) && @section == section
+    if %w( about documentation downloads community
+         ).include?(@section) && @section == section ||
+       %w( reference book videos external-links
+           guis logos
+         ).include?(@subsection) && @subsection == section
       {class: "active"}
     else
       {}
     end
-  end
-
-  def random_tagline
-    content_tag(:em, "-" * 2) + Gitscm::TAGLINES.sample
   end
 
   def latest_version
@@ -59,15 +57,11 @@ module ApplicationHelper
 
     src = options[:src] = "/images/#{image}"
 
-    unless src =~ /^(?:cid|data):/ || src.blank?
-      options[:alt] = options.fetch(:alt) { image_alt(src) }
-    end
-
     tag("img", options)
   end
 
   def banner_duration(duration)
-    return "" unless duration.present?
+    return "" if duration.blank?
     ISO8601::Duration.new(duration).to_seconds.round * 1000
   end
 end

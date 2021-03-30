@@ -59,7 +59,7 @@ var DownloadBox = {
       $(".monitor").addClass("windows");
       $("#download-link").text("Download " + $("#installer-version").attr('data-win') + " for Windows").attr("href", "/download/win");
       $("#gui-link").removeClass('mac').addClass('gui');
-      $("#gui-link").text("Windows GUIs").attr("href", "/download/gui/win");
+      $("#gui-link").text("Windows GUIs").attr("href", "/download/gui/windows");
       $("#alt-link").removeClass("windows").addClass("mac");
       $("#alt-link").text("Mac Build").attr("href", "/download/mac");
       $("#gui-os-filter").attr('data-os', 'windows');
@@ -238,6 +238,24 @@ var Downloads = {
     Downloads.observeGUIOSFilter();
     Downloads.observePopState();
     Downloads.filterGUIS();
+    Downloads.triggerAutoDownload();
+  },
+
+  triggerAutoDownload: function() {
+    var ref = document.referrer;
+    var src = $('#auto-download-link').attr('href');
+
+    if (this.shouldAutoDownload(ref, src)) {
+      $('.downloading .hide').show();
+      document.location = src;
+    }
+  },
+
+  shouldAutoDownload: function(ref, src) {
+    if (!ref || !src) {
+      return false;
+    }
+    return ref.indexOf(document.location.origin) === 0;
   },
 
   getOSFilter: function() {
@@ -328,6 +346,10 @@ var AboutContent = {
     $('section').hide(0, function(){
       $('section#' + section).show();
     });
+
+    if (section == AboutContent.defaultSection) section = 'about';
+    $('.sidebar nav .expanded a').removeClass('active');
+    $('.sidebar nav .expanded a[href$=' + section + ']').addClass('active')
   },
 
   observeNav: function() {

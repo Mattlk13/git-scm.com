@@ -5,7 +5,9 @@ This book is available in
 <p>
   Full translation available in
   <table>
+    <tr><td><a href="/book/az">azərbaycan dili</a>,</td></tr>
     <tr><td><a href="/book/bg">български език</a>,</td></tr>
+    <tr><td><a href="/book/de">Deutsch</a>,</td></tr>
     <tr><td><a href="/book/es">Español</a>,</td></tr>
     <tr><td><a href="/book/fr">Français</a>,</td></tr>
     <tr><td><a href="/book/gr">Ελληνικά</a>,</td></tr>
@@ -34,18 +36,18 @@ This book is available in
   Translations started for
   <table>
     <tr><td><a href="/book/be">Беларуская</a>,</td></tr>
-    <tr><td><a href="/book/de">Deutsch</a>,</td></tr>
     <tr><td><a href="/book/fa" dir="rtl">فارسی</a>,</td></tr>
     <tr><td><a href="/book/id">Indonesian</a>,</td></tr>
     <tr><td><a href="/book/it">Italiano</a>,</td></tr>
     <tr><td><a href="/book/ms">Bahasa Melayu</a>,</td></tr>
     <tr><td><a href="/book/pt-br">Português (Brasil)</a>,</td></tr>
     <tr><td><a href="/book/pt-pt">Português (Portugal)</a>,</td></tr>
+    <tr><td><a href="/book/sv">Svenska</a>,</td></tr>
     <tr><td><a href="/book/tr">Türkçe</a>.</td></tr>
   </table>
 </p>
 <hr class="sidebar"/>
 <p>
-The source of this book is <a href="https://github.com/progit/progit2">hosted on GitHub.</a></br>
+The source of this book is <%if @book.code == "en" %><a href="https://github.com/progit/progit2">hosted on GitHub.</a><% else %> <a href="https://github.com/<%= Book.all_books[@book.code] %>">hosted on GitHub.</a><% end %></br>
 Patches, suggestions and comments are welcome.
 </p>
